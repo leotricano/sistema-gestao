@@ -1,121 +1,93 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
+import { useEffect, useState } from 'react'
+import axios from 'axios'
 import './App.css'
 
+const api = axios.create({
+  baseURL: 'http://127.0.0.1:8000/api/',
+  headers: {
+    Authorization: `Token ${import.meta.env.VITE_API_TOKEN}`
+  }
+})
+
 function App() {
-  const [count, setCount] = useState(0)
+  const [ativos, setAtivos] = useState([])
+  const [chamados, setChamados] = useState([])
+  const [erro, setErro] = useState(null)
+
+  useEffect(() => {
+    api.get('ativos/')
+      .then(response => setAtivos(response.data))
+      .catch(error => setErro(error.message))
+
+    api.get('chamados/')
+      .then(response => setChamados(response.data))
+      .catch(error => setErro(error.message))
+  }, [])
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div>
+      <div className="header">
+        <h1><span className="brand">Aqualis</span> · Sistema de Gestão</h1>
+      </div>
 
-      <div className="ticks"></div>
+      <div className="content">
+        {erro && <div className="erro">Erro: {erro}</div>}
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+        <div className="card">
+          <div className="card-header">
+            <h2>Ativos</h2>
+            <span className="count-badge">{ativos.length} registro(s)</span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Patrimônio</th>
+                <th>Status</th>
+                <th>Responsável</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ativos.map(ativo => (
+                <tr key={ativo.id}>
+                  <td>{ativo.nome}</td>
+                  <td>{ativo.numero_patrimonio}</td>
+                  <td><span className={`badge badge-${ativo.status}`}>{ativo.status}</span></td>
+                  <td>{ativo.responsavel || '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+        <div className="card">
+          <div className="card-header">
+            <h2>Chamados</h2>
+            <span className="count-badge">{chamados.length} registro(s)</span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Título</th>
+                <th>Solicitante</th>
+                <th>Status</th>
+                <th>Prioridade</th>
+              </tr>
+            </thead>
+            <tbody>
+              {chamados.map(chamado => (
+                <tr key={chamado.id}>
+                  <td>{chamado.titulo}</td>
+                  <td>{chamado.solicitante}</td>
+                  <td><span className={`badge badge-${chamado.status}`}>{chamado.status}</span></td>
+                  <td><span className={`badge badge-${chamado.prioridade}`}>{chamado.prioridade}</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   )
 }
 
